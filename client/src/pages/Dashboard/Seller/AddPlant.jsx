@@ -1,5 +1,6 @@
 import AddPlantForm from "../../../components/Form/AddPlantForm";
 import { imageUpload } from "../../../api/utils";
+import axios from "axios";
 
 const AddPlant = () => {
   const handleFormSubmit = async (e) => {
@@ -13,7 +14,7 @@ const AddPlant = () => {
 
     // image upload
     const image = form?.image?.files[0];
-    const imageUrl = imageUpload(image);
+    const imageUrl = await imageUpload(image);
 
     const plantData = {
       name,
@@ -24,7 +25,11 @@ const AddPlant = () => {
       image: imageUrl,
     };
 
-    console.log(plantData);
+    const { data } = await axios.post(
+      `${import.meta.env.VITE_API_URL}/add-plant`,
+      plantData
+    );
+    console.log(data);
   };
   return (
     <div>
