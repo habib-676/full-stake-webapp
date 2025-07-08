@@ -1,8 +1,11 @@
 import AddPlantForm from "../../../components/Form/AddPlantForm";
 import { imageUpload } from "../../../api/utils";
 import axios from "axios";
+import useAuth from "../../../hooks/useAuth";
 
 const AddPlant = () => {
+  const { user } = useAuth();
+
   const handleFormSubmit = async (e) => {
     e.preventDefault();
     const form = e.target;
@@ -23,6 +26,10 @@ const AddPlant = () => {
       price,
       quantity,
       image: imageUrl,
+      seller: {
+        name: user?.displayName,
+        email: user?.email,
+      },
     };
 
     const { data } = await axios.post(
