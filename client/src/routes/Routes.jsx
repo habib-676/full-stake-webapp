@@ -14,6 +14,7 @@ import MainLayout from "../layouts/MainLayout";
 import MyInventory from "../pages/Dashboard/Seller/MyInventory";
 import ManageOrders from "../pages/Dashboard/Seller/ManageOrders";
 import MyOrders from "../pages/Dashboard/Customer/MyOrders";
+import LoadingSpinner from "../components/Shared/LoadingSpinner";
 
 export const router = createBrowserRouter([
   {
@@ -25,12 +26,14 @@ export const router = createBrowserRouter([
         path: "/",
         element: <Home />,
         loader: () => fetch(`${import.meta.env.VITE_API_URL}/plants`),
+        hydrateFallbackElement: <LoadingSpinner />,
       },
       {
         path: "/plant/:id",
         element: <PlantDetails />,
         loader: ({ params }) =>
           fetch(`${import.meta.env.VITE_API_URL}/plant/${params.id}`),
+        hydrateFallbackElement: <LoadingSpinner />,
       },
     ],
   },
