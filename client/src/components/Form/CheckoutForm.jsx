@@ -1,14 +1,36 @@
 import { CardElement, useElements, useStripe } from "@stripe/react-stripe-js";
 import "./checkoutForm.css";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ClipLoader } from "react-spinners";
+import useAxiosSecure from "../../hooks/useAxiosSecure";
+import useAuth from "../../hooks/useAuth";
+import toast from "react-hot-toast";
 
-const CheckoutForm = ({ totalPrice, closeModal }) => {
+const CheckoutForm = ({ totalPrice, closeModal, orderedData }) => {
+  const { user } = useAuth();
+  const axiosSecure = useAxiosSecure();
   const stripe = useStripe();
   const elements = useElements();
 
   const [cardError, setCardError] = useState(null);
   const [processing, setProcessing] = useState(false);
+
+  //   secret
+  const [clientSecret, setClientSecret] = useState("");
+
+  // validate everything before clicking the pay now button
+  useEffect(() => {
+    const getClientSecret = async () => {
+      // server request
+      const { data } = await axiosSecure.post("/create-payment-intent", {
+        quantity: orderedData?.quantity,
+        plantId: orderedData?.plantId,
+      });
+      setClientSecret(data?.clientSecret);
+    };
+
+    getClientSecret();
+  }, [axiosSecure, orderedData]);
 
   const handleSubmit = async (event) => {
     // Block native form submission.
@@ -46,8 +68,42 @@ const CheckoutForm = ({ totalPrice, closeModal }) => {
       setCardError(null);
     }
 
-    // payment receive : 
-    
+    // payment receive :
+    const result = await stripe.confirmCardPayment(clientSecret, {
+      payment_method: {
+        card,
+        billing_details: {
+          name: user?.displayName,
+          email: user?.email,
+        },
+      },
+    });
+
+    if (result.error) {
+      setCardError(result?.error?.message);
+      return;
+    }
+    if (result?.paymentIntent?.status === "succeeded") {
+      // save data in db
+      orderedData.transactionId = result?.paymentIntent?.id;
+
+      try {
+        const { data } = await axiosSecure.post("/orders", orderedData);
+        console.log(data);
+        if (data?.insertedId) {
+          toast.success("Order placed successfully");
+        }
+      } catch (error) {
+        console.log(error);
+      } finally {
+        setProcessing(false);
+        setCardError(null);
+        closeModal();
+      }
+      // update the quantity of the product
+    }
+
+    console.log(result);
   };
 
   return (

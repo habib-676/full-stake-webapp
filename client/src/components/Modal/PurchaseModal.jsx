@@ -142,7 +142,11 @@ const PurchaseModal = ({ closeModal, isOpen, plant }) => {
 
             {/* stipe checkout form */}
             <Elements stripe={stripePromise}>
-              <CheckoutForm totalPrice={totalPrice} closeModal={closeModal} />
+              <CheckoutForm
+                totalPrice={totalPrice}
+                closeModal={closeModal}
+                orderedData={orderedData}
+              />
             </Elements>
           </DialogPanel>
         </div>
