@@ -48,9 +48,38 @@ async function run() {
   const db = client.db("plantDB");
   const plantsCollection = db.collection("plants");
   const ordersCollection = db.collection("orders");
+  const usersCollection = db.collection("users");
 
   try {
     await client.connect();
+
+    // save or update users info in db
+    app.post("/users", async (req, res) => {
+      const userData = req.body;
+      userData.role = "customer";
+      userData.created_at = new Date().toISOString();
+      userData.last_loggedIn = new Date().toISOString();
+
+      const query = { email: userData?.email };
+      const alreadyExists = await usersCollection.findOne(query);
+
+      console.log("User exists ? : ", !!alreadyExists);
+
+      if (alreadyExists) {
+        console.log("Updating user data............");
+
+        const result = await usersCollection.updateOne(query, {
+          $set: { last_loggedIn: new Date().toISOString() },
+        });
+        return res.send(result);
+      }
+
+      console.log("Creating user data .....");
+
+      const result = await usersCollection.insertOne(userData);
+      res.send(result);
+    });
+
     // Generate jwt token
     app.post("/jwt", async (req, res) => {
       const email = req.body;
@@ -65,6 +94,7 @@ async function run() {
         })
         .send({ success: true });
     });
+
     // Logout
     app.get("/logout", async (req, res) => {
       try {
