@@ -3,7 +3,9 @@ import { GrLogout } from "react-icons/gr";
 import { FcSettings } from "react-icons/fc";
 import { AiOutlineBars } from "react-icons/ai";
 import { BsGraphUp } from "react-icons/bs";
+import useRole from "../../../hooks/useRole";
 import MenuItem from "./Menu/MenuItem";
+import LoadingSpinner from "../../Shared/LoadingSpinner";
 
 import useAuth from "../../../hooks/useAuth";
 
@@ -16,10 +18,19 @@ const Sidebar = () => {
   const { logOut } = useAuth();
   const [isActive, setActive] = useState(true);
 
+  // role
+  const [role, isRoleLoading] = useRole();
+  console.log(role, isRoleLoading);
+
   // Sidebar Responsive Handler
   const handleToggle = () => {
     setActive(!isActive);
   };
+
+  if (isRoleLoading) {
+    return <LoadingSpinner />;
+  }
+
   return (
     <>
       {/* Small Screen Navbar */}
@@ -71,15 +82,15 @@ const Sidebar = () => {
           <div className="flex flex-col justify-between flex-1 mt-6">
             <nav>
               {/*  Menu Items */}
-              <CustomerMenu />
-              <SellerMenu />
+              {role === "customer" && <CustomerMenu />}
+              {role === "seller" && <SellerMenu />}
 
-              {/* <MenuItem
+              <MenuItem
                 icon={BsGraphUp}
                 label="Statistics"
                 address="/dashboard"
-              /> */}
-              {/* <AdminMenu /> */}
+              />
+              {role === "admin" && <AdminMenu />}
             </nav>
           </div>
         </div>

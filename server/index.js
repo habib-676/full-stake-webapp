@@ -80,6 +80,16 @@ async function run() {
       res.send(result);
     });
 
+    // get user role
+    app.get("/users/role/:email", async (req, res) => {
+      const email = req.params.email;
+      const result = await usersCollection.findOne({ email });
+      if (!result) {
+        return res.status(404).send({ message: "User not found." });
+      }
+      res.send({ role: result?.role });
+    });
+
     // Generate jwt token
     app.post("/jwt", async (req, res) => {
       const email = req.body;
