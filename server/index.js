@@ -171,6 +171,25 @@ async function run() {
       res.send(result);
     });
 
+    // manage update quantity : (increase / decrease)
+    app.patch("/quantity-update/:id", async (req, res) => {
+      const id = req.params.id;
+      const { quantityToUpdate, status } = req.body; // status is increase or decrease
+      const filter = { _id: new ObjectId(id) };
+
+      const updateDoc = {
+        $inc: {
+          quantity:
+            status === "increase" ? quantityToUpdate : -quantityToUpdate, //increase or decrease
+        },
+      };
+
+      console.log(quantityToUpdate, status);
+
+      const result = await plantsCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+
     await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"

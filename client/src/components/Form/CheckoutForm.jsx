@@ -90,9 +90,20 @@ const CheckoutForm = ({ totalPrice, closeModal, orderedData }) => {
       try {
         const { data } = await axiosSecure.post("/orders", orderedData);
         console.log(data);
+
         if (data?.insertedId) {
           toast.success("Order placed successfully");
         }
+
+        // update quantity :
+        const { data: result } = await axiosSecure.patch(
+          `${import.meta.env.VITE_API_URL}/quantity-update/${
+            orderedData.plantId
+          }`,
+          { quantityToUpdate: orderedData.quantity, status: "decrease" }
+        );
+
+        console.log(result);
       } catch (error) {
         console.log(error);
       } finally {
