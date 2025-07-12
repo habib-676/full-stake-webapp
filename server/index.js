@@ -184,8 +184,6 @@ async function run() {
         },
       };
 
-      console.log(quantityToUpdate, status);
-
       const result = await plantsCollection.updateOne(filter, updateDoc);
       res.send(result);
     });

@@ -3,27 +3,43 @@ import Heading from "../../components/Shared/Heading";
 import Button from "../../components/Shared/Button/Button";
 import PurchaseModal from "../../components/Modal/PurchaseModal";
 import { useState } from "react";
-import { useLoaderData } from "react-router";
+import { useParams } from "react-router";
 import useAuth from "../../hooks/useAuth";
 import useRole from "../../hooks/useRole";
 import LoadingSpinner from "../../components/Shared/LoadingSpinner";
+import axios from "axios";
+import { useQuery } from "@tanstack/react-query";
 
 const PlantDetails = () => {
+  const { id } = useParams();
   const { user } = useAuth();
-
+  const [role, isRoleLoading] = useRole();
   let [isOpen, setIsOpen] = useState(false);
 
-  const plant = useLoaderData();
-  const { name, category, description, price, quantity, seller, image } = plant;
+  const {
+    data: plant,
+    isLoading,
+    refetch,
+  } = useQuery({
+    queryKey: ["plant", id],
+    queryFn: async () => {
+      const { data } = await axios(
+        `${import.meta.env.VITE_API_URL}/plant/${id}`
+      );
+      return data;
+    },
+  });
+  console.log(plant);
+
+  if (isRoleLoading || isLoading || !plant) {
+    return <LoadingSpinner />;
+  }
+  // const plant = useLoaderData();
+  const { name, category, description, price, quantity, seller, image } =
+    plant || {};
   const closeModal = () => {
     setIsOpen(false);
   };
-
-  const [role, isRoleLoading] = useRole();
-  if (isRoleLoading) {
-    return <LoadingSpinner />;
-  }
-
   return (
     <Container>
       <div className="mx-auto flex flex-col lg:flex-row justify-between w-full gap-12">
@@ -103,6 +119,7 @@ const PlantDetails = () => {
             closeModal={closeModal}
             isOpen={isOpen}
             plant={plant}
+            fetchPlant={refetch}
           />
         </div>
       </div>
